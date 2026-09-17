@@ -281,15 +281,15 @@
             <div class="form-grid">
               <div class="field">
                 <label for="qFullName">Full Name <span class="req">*</span></label>
-                <input id="qFullName" name="fullName" type="text" placeholder="Ryan Rwema" required>
+                <input id="qFullName" name="full_name" type="text" placeholder="Ryan Rwema" required>
               </div>
               <div class="field">
                 <label for="qCompany">Company Name</label>
-                <input id="qCompany" name="company" type="text" placeholder="Optional">
+                <input id="qCompany" name="company_name" type="text" placeholder="Optional">
               </div>
               <div class="field">
                 <label for="qPhone">Phone Number <span class="req">*</span></label>
-                <input id="qPhone" name="phone" type="tel" placeholder="+250 7__ ___ ___" required>
+                <input id="qPhone" name="phone_number" type="tel" placeholder="+250 7__ ___ ___" required>
               </div>
               <div class="field">
                 <label for="qEmail">Email Address <span class="req">*</span></label>
@@ -306,7 +306,7 @@
 
               <div class="field">
                 <label for="qOrigin">Country of Origin <span class="req">*</span></label>
-                <input id="qOrigin" name="origin" type="text" placeholder="e.g. China" required>
+                <input id="qOrigin" name="country_of_origin" type="text" placeholder="e.g. China" required>
               </div>
               <div class="field">
                 <label for="qDestination">Destination <span class="req">*</span></label>
@@ -315,16 +315,16 @@
 
               <div class="field full">
                 <label for="qGoods">Goods Description <span class="req">*</span></label>
-                <textarea id="qGoods" name="goods" placeholder="Describe the goods being shipped" required></textarea>
+                <textarea id="qGoods" name="goods_description" placeholder="Describe the goods being shipped" required></textarea>
               </div>
 
               <div class="field">
                 <label for="qValue">Estimated Shipment Value</label>
-                <input id="qValue" name="value" type="text" placeholder="e.g. USD 5,000">
+                <input id="qValue" name="estimated_value" type="text" placeholder="e.g. USD 5,000">
               </div>
               <div class="field">
                 <label for="qNotes">Additional Notes</label>
-                <input id="qNotes" name="notes" type="text" placeholder="Optional">
+                <input id="qNotes" name="additional_notes" type="text" placeholder="Optional">
               </div>
             </div>
 
@@ -394,22 +394,22 @@
             <div class="form-grid">
               <div class="field">
                 <label for="cName">Full Name <span class="req">*</span></label>
-                <input id="cName" type="text" placeholder="Your name" required>
+                <input id="cName" name="full_name" type="text" placeholder="Your name" required>
               </div>
 
               <div class="field">
                 <label for="cEmail">Email Address <span class="req">*</span></label>
-                <input id="cEmail" type="email" placeholder="you@example.com" required>
+                <input id="cEmail" name="email" type="email" placeholder="you@example.com" required>
               </div>
 
               <div class="field full">
                 <label for="cSubject">Subject</label>
-                <input id="cSubject" type="text" placeholder="What's this about?">
+                <input id="cSubject" name="subject" type="text" placeholder="What's this about?">
               </div>
 
               <div class="field full">
                 <label for="cMessage">Message <span class="req">*</span></label>
-                <textarea id="cMessage" placeholder="How can we help?" required></textarea>
+                <textarea id="cMessage" name="message" placeholder="How can we help?" required></textarea>
               </div>
 
             </div>
@@ -618,24 +618,55 @@
     });
   });
 
-  // Quote form submit (client-side demo — no backend configured)
+  // Quote form submit — connected to Flask backend
   var quoteForm = document.getElementById('quoteForm');
   var quoteSuccess = document.getElementById('quoteSuccess');
   quoteForm.addEventListener('submit', function(e){
     e.preventDefault();
     if(!quoteForm.checkValidity()){ quoteForm.reportValidity(); return; }
-    quoteForm.style.display = 'none';
-    quoteSuccess.classList.add('show');
+
+    var data = Object.fromEntries(new FormData(quoteForm));
+    data.shipment_type = shipmentValue;
+
+    fetch('/api/quote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+    .then(function(res){
+      if(res.ok){
+        quoteForm.style.display = 'none';
+        quoteSuccess.classList.add('show');
+      } else {
+        alert('Something went wrong. Please try again.');
+      }
+    })
+    .catch(function(){ alert('Network error. Please try again.'); });
   });
 
-  // Contact form submit (client-side demo — no backend configured)
+  // Contact form submit — connected to Flask backend
   var contactForm = document.getElementById('contactForm');
   var contactSuccess = document.getElementById('contactSuccess');
   contactForm.addEventListener('submit', function(e){
     e.preventDefault();
     if(!contactForm.checkValidity()){ contactForm.reportValidity(); return; }
-    contactForm.style.display = 'none';
-    contactSuccess.classList.add('show');
+
+    var data = Object.fromEntries(new FormData(contactForm));
+
+    fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+    .then(function(res){
+      if(res.ok){
+        contactForm.style.display = 'none';
+        contactSuccess.classList.add('show');
+      } else {
+        alert('Something went wrong. Please try again.');
+      }
+    })
+    .catch(function(){ alert('Network error. Please try again.'); });
   });
 
   // FAQ accordion
@@ -663,6 +694,7 @@
     });
   });
 })();
+
 </script>
 
 </body>
